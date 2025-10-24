@@ -1,5 +1,4 @@
-# V-Flight Computer
-
+# -Flight Computer 2
 Robust flight data acquisition, logging, and telemetry for model rockets. The system uses a dual‑ESP32 architecture: a sensor-rich transmitter (TX) and a ground/bench receiver (RX) that provides local logging.
 
 ## Current Implementation Status
