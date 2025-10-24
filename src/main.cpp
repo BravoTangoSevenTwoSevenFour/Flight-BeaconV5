@@ -118,24 +118,36 @@ void setup() {
     Serial.println("LittleFS OK");
   }
 
+  // Initialize GPS data to prevent garbage values
+  data.gpsLat = 0.0;
+  data.gpsLng = 0.0;
+  data.gpsAlt = 0.0;
+  data.gpsSpeed = 0.0;
+  data.gpsSats = 0;
+
+  // Initialize timing variables properly
+  lastTransmit = millis();
+  lastLog = millis();
+
   Serial.println("TX: Ready!");
+  delay(100); // Small delay to stabilize
 }
 
 void loop() {
+  static unsigned long counter = 0;
+  counter++;
+  
   unsigned long now = millis();
-
-  // Read sensors as fast as possible
   data.timestamp = now;
-
+  
   // Read BMP280
   data.temperature = bmp.readTemperature();
   data.pressure = bmp.readPressure();
-
+  
   // Read LSM9DS1
   lsm.read();
   sensors_event_t a, m, g, temp;
   lsm.getEvent(&a, &m, &g, &temp);
-
   data.accelX = a.acceleration.x;
   data.accelY = a.acceleration.y;
   data.accelZ = a.acceleration.z;
@@ -145,12 +157,11 @@ void loop() {
   data.magX = m.magnetic.x;
   data.magY = m.magnetic.y;
   data.magZ = m.magnetic.z;
-
+  
   // Read GPS (non-blocking)
   while (gpsSerial.available() > 0) {
     gps.encode(gpsSerial.read());
   }
-
   if (gps.location.isValid()) {
     data.gpsLat = gps.location.lat();
     data.gpsLng = gps.location.lng();
@@ -158,32 +169,58 @@ void loop() {
     data.gpsSpeed = gps.speed.mps();
     data.gpsSats = gps.satellites.value();
   }
-
-  // Log to file every 10ms (~100Hz logging)
-  if (now - lastLog >= 10) {
-    lastLog = now;
-    logData();
+  
+  // Show heartbeat
+  if (counter % 10 == 0) {
+    Serial.print(".");
   }
-
-  // Transmit via LoRa every 200ms (~5Hz transmission)
-  if (now - lastTransmit >= 200) {
+  
+  // Transmit via LoRa every 1 second
+  if (now >= lastTransmit && (now - lastTransmit) >= 1000) {
     lastTransmit = now;
     transmitData();
   }
+  
+  delay(10);
 }
 
 void logData() {
   logFile = LittleFS.open("/flight.log", "a");
   if (logFile) {
-    // Write CSV format
-    logFile.printf("%lu,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.6f,%.6f,%.2f,%.2f,%d\n",
-                   data.timestamp,
-                   data.temperature, data.pressure,
-                   data.accelX, data.accelY, data.accelZ,
-                   data.gyroX, data.gyroY, data.gyroZ,
-                   data.magX, data.magY, data.magZ,
-                   data.gpsLat, data.gpsLng, data.gpsAlt, data.gpsSpeed,
-                   data.gpsSats);
+    // Write CSV format - using print instead of printf to avoid potential issues
+    logFile.print(data.timestamp);
+    logFile.print(",");
+    logFile.print(data.temperature);
+    logFile.print(",");
+    logFile.print(data.pressure);
+    logFile.print(",");
+    logFile.print(data.accelX);
+    logFile.print(",");
+    logFile.print(data.accelY);
+    logFile.print(",");
+    logFile.print(data.accelZ);
+    logFile.print(",");
+    logFile.print(data.gyroX);
+    logFile.print(",");
+    logFile.print(data.gyroY);
+    logFile.print(",");
+    logFile.print(data.gyroZ);
+    logFile.print(",");
+    logFile.print(data.magX);
+    logFile.print(",");
+    logFile.print(data.magY);
+    logFile.print(",");
+    logFile.print(data.magZ);
+    logFile.print(",");
+    logFile.print(data.gpsLat, 6);
+    logFile.print(",");
+    logFile.print(data.gpsLng, 6);
+    logFile.print(",");
+    logFile.print(data.gpsAlt);
+    logFile.print(",");
+    logFile.print(data.gpsSpeed);
+    logFile.print(",");
+    logFile.println(data.gpsSats);
     logFile.close();
   }
 }
@@ -195,9 +232,20 @@ void transmitData() {
   LoRa.endPacket();
 
   packetCounter++;
-  Serial.printf("TX #%lu: T=%.1f P=%.0f A=(%.1f,%.1f,%.1f) GPS=%.4f,%.4f\n",
-                packetCounter,
-                data.temperature, data.pressure,
-                data.accelX, data.accelY, data.accelZ,
-                data.gpsLat, data.gpsLng);
+  Serial.print("TX #");
+  Serial.print(packetCounter);
+  Serial.print(": T=");
+  Serial.print(data.temperature);
+  Serial.print(" P=");
+  Serial.print(data.pressure);
+  Serial.print(" A=(");
+  Serial.print(data.accelX);
+  Serial.print(",");
+  Serial.print(data.accelY);
+  Serial.print(",");
+  Serial.print(data.accelZ);
+  Serial.print(") GPS=");
+  Serial.print(data.gpsLat, 4);
+  Serial.print(",");
+  Serial.println(data.gpsLng, 4);
 }

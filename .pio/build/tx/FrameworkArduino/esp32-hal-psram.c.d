@@ -101,6 +101,4 @@
  /home/pilot__/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-bt.h \
  /home/pilot__/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-psram.h \
  /home/pilot__/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-rgb-led.h \
- /home/pilot__/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-cpu.h \
- /home/pilot__/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/soc/esp32/include/soc/efuse_reg.h \
- /home/pilot__/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h
+ /home/pilot__/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-cpu.h
