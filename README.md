@@ -2,6 +2,16 @@
 
 Robust flight data acquisition, logging, and telemetry for model rockets. The system uses a dual‑ESP32 architecture: a sensor-rich transmitter (TX) and a ground/bench receiver (RX) that provides local logging.
 
+## Current Implementation Status
+
+**This is a simplified, barebones implementation** focused on core functionality:
+- Reading sensors at maximum reliable rates
+- Local logging at ~100Hz
+- LoRa transmission at ~5Hz
+- Terminal display and logging on RX
+
+See [QUICKSTART.md](QUICKSTART.md) for immediate usage instructions.
+
 ## Table of Contents
 - [Overview](#overview)
 - [Hardware Specifications](#hardware-specifications)
